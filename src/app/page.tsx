@@ -7,6 +7,8 @@ import type { BirthdayDetails } from "@/lib/types";
 import { PartyPopper, Settings } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { generateBirthdaySongAction } from "./actions";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Home() {
   const [details, setDetails] = useState<BirthdayDetails>({
@@ -18,6 +20,9 @@ export default function Home() {
   });
 
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [songUrl, setSongUrl] = useState<string | null>(null);
+  const [isSinging, setIsSinging] = useState(false);
+  const { toast } = useToast();
 
   const handleDetailsChange = useCallback((newDetails: BirthdayDetails, newImageUrl: string | null) => {
     setDetails(prevDetails => {
@@ -38,6 +43,32 @@ export default function Home() {
       return prevUrl;
     });
   }, []);
+
+  const handleSing = async (name: string) => {
+    setIsSinging(true);
+    // Clear previous song
+    setSongUrl(null); 
+    try {
+      const result = await generateBirthdaySongAction(name);
+      if (result.songUrl) {
+        setSongUrl(result.songUrl);
+      } else {
+        toast({
+          title: "Couldn't generate song",
+          description: result.error,
+          variant: "destructive",
+        });
+      }
+    } catch (e) {
+       toast({
+          title: "An unexpected error occurred",
+          description: "Failed to connect to the song generation service.",
+          variant: "destructive",
+       });
+    } finally {
+      setIsSinging(false);
+    }
+  };
 
   useEffect(() => {
     // Clean up the object URL when the component unmounts
@@ -60,7 +91,13 @@ export default function Home() {
       </header>
       
       <div className="w-full max-w-lg">
-        <BirthdayCard {...details} image={imageUrl} />
+        <BirthdayCard
+          {...details}
+          image={imageUrl}
+          songUrl={songUrl}
+          isSinging={isSinging}
+          onSing={handleSing}
+        />
       </div>
 
       <Sheet>

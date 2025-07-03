@@ -1,17 +1,21 @@
 "use client";
 
 import Image from "next/image";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Cake, Gift } from "lucide-react";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Cake, Gift, Music, LoaderCircle } from "lucide-react";
 
 type BirthdayCardProps = {
   name: string;
   age: number;
   message: string;
   image: string | null;
+  songUrl: string | null;
+  isSinging: boolean;
+  onSing: (name: string) => void;
 };
 
-export function BirthdayCard({ name, age, message, image }: BirthdayCardProps) {
+export function BirthdayCard({ name, age, message, image, songUrl, isSinging, onSing }: BirthdayCardProps) {
   return (
     <div className="transition-all duration-500 ease-in-out animate-in fade-in zoom-in-95">
       <Card className="w-full overflow-hidden shadow-2xl shadow-primary/20 rounded-xl">
@@ -41,6 +45,20 @@ export function BirthdayCard({ name, age, message, image }: BirthdayCardProps) {
             &ldquo;{message}&rdquo;
           </p>
         </CardContent>
+        <CardFooter className="flex-col gap-4 p-6 pt-0">
+          <Button onClick={() => onSing(name)} disabled={isSinging} className="w-full bg-secondary hover:bg-secondary/80 text-secondary-foreground">
+            {isSinging ? <LoaderCircle className="animate-spin" /> : <Music />}
+            {isSinging ? "Generating Song..." : "Sing Happy Birthday!"}
+          </Button>
+          {songUrl && (
+            <div className="w-full">
+               <audio key={songUrl} controls autoPlay className="w-full">
+                <source src={songUrl} type="audio/wav" />
+                Your browser does not support the audio element.
+              </audio>
+            </div>
+          )}
+        </CardFooter>
       </Card>
     </div>
   );

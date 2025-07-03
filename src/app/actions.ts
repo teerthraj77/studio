@@ -1,6 +1,7 @@
 "use server";
 
 import { generateBirthdayMessage, type GenerateBirthdayMessageInput } from "@/ai/flows/generate-birthday-message";
+import { generateBirthdaySong } from "@/ai/flows/generate-birthday-song";
 import { z } from "zod";
 
 const formSchema = z.object({
@@ -42,5 +43,19 @@ export async function createBirthdayMessage(prevState: FormState, formData: Form
       message: "Failed to generate message. Please try again.",
       issues: [error instanceof Error ? error.message : "An unknown error occurred."],
     };
+  }
+}
+
+export async function generateBirthdaySongAction(name: string): Promise<{ songUrl?: string; error?: string }> {
+  if (!name) {
+    return { error: 'Name is required to generate a song.' };
+  }
+  try {
+    const result = await generateBirthdaySong({ name });
+    return { songUrl: result.audioDataUri };
+  } catch (error) {
+    console.error(error);
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+    return { error: `Failed to generate the birthday song: ${errorMessage}` };
   }
 }
